@@ -1,6 +1,6 @@
+/* oxlint-disable next/no-html-link-for-pages -- Native navigation avoids the broken vinext client-router interception. */
 import type { Metadata } from 'next';
 import Image from 'next/image';
-import Link from 'next/link';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { MobileToc, type TocItem } from '@/components/mobile-toc';
@@ -69,7 +69,7 @@ export default async function EssayPage({ params }: EssayPageProps) {
       <main className="missing-page">
         <p>404</p>
         <h1>글을 찾을 수 없습니다.</h1>
-        <Link href="/">글 목록으로 돌아가기</Link>
+        <a href="/">글 목록으로 돌아가기</a>
       </main>
     );
   }
@@ -83,13 +83,13 @@ export default async function EssayPage({ params }: EssayPageProps) {
     <main className="article-page">
       <ReadingProgress />
       <header className="article-nav">
-        <Link className="article-back" href="/">
+        <a className="article-back" href="/">
           <ArrowLeft aria-hidden="true" />
           <span>글 목록</span>
-        </Link>
-        <Link className="article-brand" href="/">
+        </a>
+        <a className="article-brand" href="/">
           HappyCountry
-        </Link>
+        </a>
       </header>
 
       <article>
@@ -185,22 +185,22 @@ export default async function EssayPage({ params }: EssayPageProps) {
 
         <nav className="article-pagination" aria-label="다른 에세이">
           {previous ? (
-            <Link href={`/essays/${previous.slug}`}>
+            <a href={`/essays/${previous.slug}`}>
               <span>
                 <ArrowLeft aria-hidden="true" /> 이전 글
               </span>
               <strong>{previous.title}</strong>
-            </Link>
+            </a>
           ) : (
             <span />
           )}
           {next ? (
-            <Link href={`/essays/${next.slug}`}>
+            <a href={`/essays/${next.slug}`}>
               <span>
                 다음 글 <ArrowRight aria-hidden="true" />
               </span>
               <strong>{next.title}</strong>
-            </Link>
+            </a>
           ) : (
             <span />
           )}

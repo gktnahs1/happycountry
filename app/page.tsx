@@ -1,14 +1,13 @@
-import Link from 'next/link';
-
+/* oxlint-disable next/no-html-link-for-pages -- Native navigation avoids the broken vinext client-router interception. */
 import { articles } from '@/lib/articles';
 
 export default function Home() {
   return (
     <main className="index-page">
       <header className="site-header">
-        <Link className="brand-mark" href="/">
+        <a className="brand-mark" href="/">
           HappyCountry
-        </Link>
+        </a>
       </header>
 
       <section className="index-content" aria-labelledby="index-heading">
@@ -18,7 +17,7 @@ export default function Home() {
 
         <div className="essay-list">
           {articles.map((article) => (
-            <Link
+            <a
               className="essay-row"
               href={`/essays/${article.slug}`}
               key={article.slug}
@@ -28,7 +27,7 @@ export default function Home() {
                 <span>약 {article.readingMinutes}분</span>
               </div>
               <h2>{article.title}</h2>
-            </Link>
+            </a>
           ))}
         </div>
       </section>
