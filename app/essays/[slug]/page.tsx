@@ -3,9 +3,10 @@ import type { Metadata } from 'next';
 import Image from 'next/image';
 import { ArrowLeft, ArrowRight } from 'lucide-react';
 
-import { MobileToc, type TocItem } from '@/components/mobile-toc';
+import { ArticleDocumentRenderer } from '@/components/article/article-document';
+import { ArticleToc } from '@/components/article/article-toc';
 import { ReadingProgress } from '@/components/reading-progress';
-import { articles, getArticle } from '@/lib/articles';
+import { articles, getArticle } from '@/lib/content/articles';
 
 type EssayPageProps = {
   params: Promise<{ slug: string }>;
@@ -13,27 +14,20 @@ type EssayPageProps = {
 
 const SITE_URL = 'https://happycountry-essays.gktnahs.chatgpt.site';
 
-function getToc(article: NonNullable<ReturnType<typeof getArticle>>): TocItem[] {
-  let headingIndex = 0;
-  return article.blocks.flatMap((block) => {
-    if (block.type !== 'heading') return [];
-    headingIndex += 1;
-    return [{ id: `section-${headingIndex}`, label: block.text, level: block.level }];
-  });
-}
-
 export function generateStaticParams() {
   return articles.map((article) => ({ slug: article.slug }));
 }
 
-export async function generateMetadata({ params }: EssayPageProps): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: EssayPageProps): Promise<Metadata> {
   const { slug } = await params;
   const article = getArticle(slug);
 
   if (!article) return { title: '글을 찾을 수 없습니다' };
 
-  const primaryImage = article.coverImage
-    ? new URL(article.coverImage, SITE_URL).toString()
+  const primaryImage = article.cover
+    ? new URL(article.cover.src, SITE_URL).toString()
     : undefined;
 
   return {
@@ -45,10 +39,12 @@ export async function generateMetadata({ params }: EssayPageProps): Promise<Meta
       title: article.title,
       description: article.description,
       publishedTime: article.publishedAt,
+      modifiedTime: article.updatedAt,
       authors: [article.author],
+      tags: article.tags,
       url: `/essays/${article.slug}`,
       images: primaryImage
-        ? [{ url: primaryImage, alt: article.coverAlt ?? article.title }]
+        ? [{ url: primaryImage, alt: article.cover?.alt ?? article.title }]
         : [],
     },
     twitter: {
@@ -76,8 +72,8 @@ export default async function EssayPage({ params }: EssayPageProps) {
 
   const articleIndex = articles.findIndex((item) => item.slug === article.slug);
   const previous = articleIndex > 0 ? articles[articleIndex - 1] : undefined;
-  const next = articleIndex < articles.length - 1 ? articles[articleIndex + 1] : undefined;
-  const toc = getToc(article);
+  const next =
+    articleIndex < articles.length - 1 ? articles[articleIndex + 1] : undefined;
 
   return (
     <main className="article-page">
@@ -102,84 +98,28 @@ export default async function EssayPage({ params }: EssayPageProps) {
           </div>
         </header>
 
-        {article.coverImage ? (
+        {article.cover ? (
           <figure className="article-cover">
             <Image
-              src={article.coverImage}
-              alt={article.coverAlt ?? ''}
+              src={article.cover.src}
+              alt={article.cover.alt}
               width={1254}
               height={1254}
               sizes="(max-width: 1264px) calc(100vw - 64px), 1200px"
               priority
             />
+            {article.cover.caption ? (
+              <figcaption>{article.cover.caption}</figcaption>
+            ) : null}
           </figure>
         ) : null}
 
-        <MobileToc items={toc} />
-
-        <div className={`article-layout ${toc.length ? 'has-toc' : ''}`}>
-          {toc.length ? (
-            <aside className="desktop-toc">
-              <p>이 글의 목차</p>
-              <nav aria-label="글 목차">
-                {toc.map((item) => (
-                  <a
-                    key={item.id}
-                    className={item.level === 4 ? 'toc-subitem' : undefined}
-                    href={`#${item.id}`}
-                  >
-                    {item.label}
-                  </a>
-                ))}
-              </nav>
-            </aside>
-          ) : null}
-
+        <div
+          className={`article-layout ${article.toc.length ? 'has-toc' : ''}`}
+        >
+          <ArticleToc items={article.toc} />
           <div className="article-body">
-            {article.blocks.map((block, blockIndex) => {
-              if (block.type === 'heading') {
-                const headingNumber = article.blocks
-                  .slice(0, blockIndex + 1)
-                  .filter((candidate) => candidate.type === 'heading').length;
-                const id = `section-${headingNumber}`;
-                if (block.level === 3) {
-                  return (
-                    <h2 id={id} key={`${id}-${blockIndex}`}>
-                      {block.text}
-                    </h2>
-                  );
-                }
-                return (
-                  <h3 id={id} key={`${id}-${blockIndex}`}>
-                    {block.text}
-                  </h3>
-                );
-              }
-
-              if (block.type === 'image') {
-                return (
-                  <figure className="article-figure" key={`image-${blockIndex}`}>
-                    <Image
-                      src={block.src}
-                      alt={block.alt}
-                      width={1254}
-                      height={1254}
-                      sizes="(max-width: 752px) calc(100vw - 32px), 720px"
-                    />
-                  </figure>
-                );
-              }
-
-              if (block.type === 'warning') {
-                return (
-                  <aside className="article-warning" key={`warning-${blockIndex}`}>
-                    <p>{block.text}</p>
-                  </aside>
-                );
-              }
-
-              return <p key={`paragraph-${blockIndex}`}>{block.text}</p>;
-            })}
+            <ArticleDocumentRenderer article={article} />
           </div>
         </div>
 

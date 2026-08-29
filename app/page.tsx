@@ -1,5 +1,5 @@
 /* oxlint-disable next/no-html-link-for-pages -- Native navigation avoids the broken vinext client-router interception. */
-import { articles } from '@/lib/articles';
+import { articles } from '@/lib/content/articles';
 
 export default function Home() {
   return (
@@ -23,7 +23,9 @@ export default function Home() {
               key={article.slug}
             >
               <div className="essay-row-meta">
-                <time dateTime={article.publishedAt}>{article.displayDate}</time>
+                <time dateTime={article.publishedAt}>
+                  {article.displayDate}
+                </time>
                 <span>약 {article.readingMinutes}분</span>
               </div>
               <h2>{article.title}</h2>

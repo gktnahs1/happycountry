@@ -1,6 +1,14 @@
 import type { Metadata } from 'next';
+import { Noto_Serif_KR } from 'next/font/google';
 
 import './globals.css';
+
+const notoSerifKr = Noto_Serif_KR({
+  display: 'swap',
+  preload: false,
+  variable: '--font-noto-serif-kr',
+  weight: ['400', '600'],
+});
 
 export const metadata: Metadata = {
   metadataBase: new URL('https://happycountry-essays.gktnahs.chatgpt.site'),
@@ -33,10 +41,12 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({
+  children,
+}: Readonly<{ children: React.ReactNode }>) {
   return (
     <html lang="ko">
-      <body>{children}</body>
+      <body className={notoSerifKr.variable}>{children}</body>
     </html>
   );
 }
