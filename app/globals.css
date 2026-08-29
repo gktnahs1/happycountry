@@ -161,6 +161,7 @@ a {
   line-height: 1.35;
   letter-spacing: -0.04em;
   text-wrap: balance;
+  word-break: keep-all;
 }
 
 .reading-progress {
@@ -345,6 +346,8 @@ a {
 .article-body h3 {
   scroll-margin-top: 6rem;
   text-wrap: balance;
+  word-break: keep-all;
+  overflow-wrap: break-word;
 }
 
 .article-body h2 {
