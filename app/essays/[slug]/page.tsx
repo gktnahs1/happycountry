@@ -10,6 +10,8 @@ type EssayPageProps = {
   params: Promise<{ slug: string }>;
 };
 
+const SITE_URL = 'https://happycountry-essays.gktnahs.chatgpt.site';
+
 function getToc(article: NonNullable<ReturnType<typeof getArticle>>): TocItem[] {
   let headingIndex = 0;
   return article.blocks.flatMap((block) => {
@@ -29,6 +31,10 @@ export async function generateMetadata({ params }: EssayPageProps): Promise<Meta
 
   if (!article) return { title: '글을 찾을 수 없습니다' };
 
+  const primaryImage = article.coverImage
+    ? new URL(article.coverImage, SITE_URL).toString()
+    : undefined;
+
   return {
     title: article.title,
     description: article.description,
@@ -39,13 +45,16 @@ export async function generateMetadata({ params }: EssayPageProps): Promise<Meta
       description: article.description,
       publishedTime: article.publishedAt,
       authors: [article.author],
-      images: [],
+      url: `/essays/${article.slug}`,
+      images: primaryImage
+        ? [{ url: primaryImage, alt: article.coverAlt ?? article.title }]
+        : [],
     },
     twitter: {
-      card: 'summary',
+      card: primaryImage ? 'summary_large_image' : 'summary',
       title: article.title,
       description: article.description,
-      images: [],
+      images: primaryImage ? [primaryImage] : [],
     },
   };
 }
