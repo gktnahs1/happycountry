@@ -335,7 +335,7 @@ a {
   grid-template-columns: 2.5rem minmax(0, 1fr);
   gap: 0.35rem;
   color: var(--muted-foreground);
-  font-size: 0.73rem;
+  font-size: 0.8rem;
   line-height: 1.5;
 }
 
@@ -345,6 +345,9 @@ a {
 }
 
 .toc-number {
+  color: var(--foreground);
+  font-size: 0.8125rem;
+  font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
 
@@ -412,14 +415,20 @@ a {
 .section-number {
   color: var(--muted-foreground);
   font-family: var(--font-sans-stack);
-  font-size: 0.75rem;
-  font-weight: 650;
+  font-size: 0.875rem;
+  font-weight: 700;
+  line-height: 1.2;
   letter-spacing: 0;
   font-variant-numeric: tabular-nums;
 }
 
 .article-body h2 .section-number {
   display: block;
+  font-size: 1.125rem;
+}
+
+.article-body h3 .section-number {
+  font-size: 1rem;
 }
 
 .article-body strong {
