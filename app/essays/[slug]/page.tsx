@@ -1,6 +1,7 @@
 import type { Metadata } from 'next';
+import Image from 'next/image';
 import Link from 'next/link';
-import { ArrowLeft, ArrowRight, Clock3 } from 'lucide-react';
+import { ArrowLeft, ArrowRight } from 'lucide-react';
 
 import { MobileToc, type TocItem } from '@/components/mobile-toc';
 import { ReadingProgress } from '@/components/reading-progress';
@@ -77,7 +78,6 @@ export default async function EssayPage({ params }: EssayPageProps) {
   const previous = articleIndex > 0 ? articles[articleIndex - 1] : undefined;
   const next = articleIndex < articles.length - 1 ? articles[articleIndex + 1] : undefined;
   const toc = getToc(article);
-  let headingIndex = 0;
 
   return (
     <main className="article-page">
@@ -90,45 +90,30 @@ export default async function EssayPage({ params }: EssayPageProps) {
         <Link className="article-brand" href="/">
           HappyCountry
         </Link>
-        <span className="article-number">
-          {String(articleIndex + 1).padStart(2, '0')} / {String(articles.length).padStart(2, '0')}
-        </span>
       </header>
 
       <article>
         <header className="article-hero">
-          <p className="article-eyebrow">{article.eyebrow}</p>
-          <div className="article-title-row">
-            <span aria-hidden="true">{article.emoji}</span>
-            <h1>{article.title}</h1>
-          </div>
-          <p className="article-description">{article.description}</p>
+          <h1>{article.title}</h1>
           <div className="article-byline">
-            <div className="author-monogram" aria-hidden="true">
-              이
-            </div>
-            <div>
-              <strong>{article.author}</strong>
-              <span>{article.authorDetail}</span>
-            </div>
+            <strong>{article.author}</strong>
             <time dateTime={article.publishedAt}>{article.displayDate}</time>
-            <span className="read-time">
-              <Clock3 aria-hidden="true" /> 약 {article.readingMinutes}분
-            </span>
+            <span>약 {article.readingMinutes}분</span>
           </div>
         </header>
 
         {article.coverImage ? (
           <figure className="article-cover">
-            <img src={article.coverImage} alt={article.coverAlt ?? ''} />
+            <Image
+              src={article.coverImage}
+              alt={article.coverAlt ?? ''}
+              width={1254}
+              height={1254}
+              sizes="(max-width: 1080px) calc(100vw - 32px), 1040px"
+              priority
+            />
           </figure>
-        ) : (
-          <div className="article-divider-art" aria-hidden="true">
-            <span>Value creation</span>
-            <i />
-            <span>Value capture</span>
-          </div>
-        )}
+        ) : null}
 
         <MobileToc items={toc} />
 
@@ -153,8 +138,10 @@ export default async function EssayPage({ params }: EssayPageProps) {
           <div className="article-body">
             {article.blocks.map((block, blockIndex) => {
               if (block.type === 'heading') {
-                headingIndex += 1;
-                const id = `section-${headingIndex}`;
+                const headingNumber = article.blocks
+                  .slice(0, blockIndex + 1)
+                  .filter((candidate) => candidate.type === 'heading').length;
+                const id = `section-${headingNumber}`;
                 if (block.level === 3) {
                   return (
                     <h2 id={id} key={`${id}-${blockIndex}`}>
@@ -172,8 +159,13 @@ export default async function EssayPage({ params }: EssayPageProps) {
               if (block.type === 'image') {
                 return (
                   <figure className="article-figure" key={`image-${blockIndex}`}>
-                    <img src={block.src} alt={block.alt} loading="lazy" />
-                    {block.caption ? <figcaption>{block.caption}</figcaption> : null}
+                    <Image
+                      src={block.src}
+                      alt={block.alt}
+                      width={1254}
+                      height={1254}
+                      sizes="(max-width: 752px) calc(100vw - 32px), 720px"
+                    />
                   </figure>
                 );
               }
@@ -181,8 +173,7 @@ export default async function EssayPage({ params }: EssayPageProps) {
               if (block.type === 'warning') {
                 return (
                   <aside className="article-warning" key={`warning-${blockIndex}`}>
-                    <strong>투자 관련 안내</strong>
-                    <p>{block.text.replace(/^<경고>\s*:\s*/, '')}</p>
+                    <p>{block.text}</p>
                   </aside>
                 );
               }

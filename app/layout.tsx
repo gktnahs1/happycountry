@@ -8,28 +8,27 @@ export const metadata: Metadata = {
     default: 'HappyCountry | 에세이',
     template: '%s | HappyCountry',
   },
-  description:
-    '기술과 사업, 플랫폼의 다음 장면을 질문하고 나름의 언어로 답하는 에세이 아카이브.',
+  description: '이경석의 에세이 아카이브.',
   openGraph: {
     type: 'website',
     locale: 'ko_KR',
     siteName: 'HappyCountry | 에세이',
     title: 'HappyCountry | 에세이',
-    description: '질문에서 시작한 생각의 기록',
+    description: '이경석의 에세이 아카이브',
     url: '/',
     images: [
       {
         url: '/og.png',
-        width: 1729,
-        height: 910,
-        alt: 'HappyCountry | 에세이 — 질문에서 시작한 생각의 기록',
+        width: 1200,
+        height: 630,
+        alt: 'HappyCountry 에세이',
       },
     ],
   },
   twitter: {
     card: 'summary_large_image',
     title: 'HappyCountry | 에세이',
-    description: '질문에서 시작한 생각의 기록',
+    description: '이경석의 에세이 아카이브',
     images: ['/og.png'],
   },
 };
