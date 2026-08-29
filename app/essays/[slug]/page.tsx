@@ -109,7 +109,7 @@ export default async function EssayPage({ params }: EssayPageProps) {
               alt={article.coverAlt ?? ''}
               width={1254}
               height={1254}
-              sizes="(max-width: 1080px) calc(100vw - 32px), 1040px"
+              sizes="(max-width: 1264px) calc(100vw - 64px), 1200px"
               priority
             />
           </figure>
