@@ -389,11 +389,12 @@ a {
 .desktop-toc a,
 .mobile-toc a {
   display: grid;
-  grid-template-columns: 2.5rem minmax(0, 1fr);
-  gap: 0.35rem;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.6rem;
   color: var(--muted-foreground);
-  font-size: 0.8rem;
-  line-height: 1.5;
+  font-size: 0.875rem;
+  line-height: 1.55;
+  align-items: baseline;
 }
 
 .desktop-toc a:hover,
@@ -403,7 +404,7 @@ a {
 
 .toc-number {
   color: var(--foreground);
-  font-size: 0.8125rem;
+  font-size: inherit;
   font-weight: 700;
   font-variant-numeric: tabular-nums;
 }
@@ -453,7 +454,8 @@ a {
 .article-body h3,
 .article-body h4 {
   display: grid;
-  grid-template-columns: 3.1rem minmax(0, 1fr);
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: 0.75rem;
   align-items: baseline;
 }
 
@@ -472,7 +474,7 @@ a {
 .section-number {
   color: var(--muted-foreground);
   font-family: var(--font-sans-stack);
-  font-size: 0.875rem;
+  font-size: 1rem;
   font-weight: 700;
   line-height: 1.2;
   letter-spacing: 0;
@@ -481,11 +483,16 @@ a {
 
 .article-body h2 .section-number {
   display: block;
-  font-size: 1.125rem;
+  font-size: 1.25rem;
+  margin-bottom: 0.25rem;
 }
 
 .article-body h3 .section-number {
-  font-size: 1rem;
+  font-size: 1.35rem;
+}
+
+.article-body h4 .section-number {
+  font-size: 1.1rem;
 }
 
 .article-body strong {
