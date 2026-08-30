@@ -30,6 +30,7 @@ import type {
 } from '@/lib/editor/types';
 
 type ApiPayload = { article?: EditorArticle; error?: string };
+type BodySnapshot = { value: string; start: number; end: number };
 
 export function ArticleEditor({
   initialArticle,
@@ -57,12 +58,100 @@ export function ArticleEditor({
   const [assetCaption, setAssetCaption] = useState('');
   const [assetWidth, setAssetWidth] = useState<'body' | 'wide' | 'full'>('body');
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const bodyUndoRef = useRef<BodySnapshot[]>([]);
+  const bodyRedoRef = useRef<BodySnapshot[]>([]);
+  const lastBodyEditRef = useRef<{ inputType: string; at: number } | null>(null);
+  const beforeInputRecordedRef = useRef(false);
 
   const updateDraft = useCallback(<K extends keyof ArticleDraftInput>(key: K, value: ArticleDraftInput[K]) => {
     setDraft((current) => ({ ...current, [key]: value }));
     setDirty(true);
     setNotice('');
   }, []);
+
+  function recordBodyHistory(inputType: string, snapshot?: BodySnapshot) {
+    const textarea = textareaRef.current;
+    if (!textarea) return;
+    const now = Date.now();
+    const lastEdit = lastBodyEditRef.current;
+    const groupsTyping = inputType === 'insertText' || inputType.startsWith('deleteContent');
+    const continuesGroup = groupsTyping
+      && lastEdit?.inputType === inputType
+      && now - lastEdit.at < 800;
+
+    if (!continuesGroup) {
+      bodyUndoRef.current.push(snapshot ?? {
+        value: textarea.value,
+        start: textarea.selectionStart,
+        end: textarea.selectionEnd,
+      });
+      if (bodyUndoRef.current.length > 100) bodyUndoRef.current.shift();
+    }
+    bodyRedoRef.current = [];
+    lastBodyEditRef.current = { inputType, at: now };
+  }
+
+  function applyBodySnapshot(snapshot: BodySnapshot) {
+    updateDraft('body', snapshot.value);
+    requestAnimationFrame(() => {
+      const textarea = textareaRef.current;
+      if (!textarea) return;
+      textarea.focus();
+      textarea.setSelectionRange(snapshot.start, snapshot.end);
+    });
+  }
+
+  function undoBody() {
+    const textarea = textareaRef.current;
+    const previous = bodyUndoRef.current.pop();
+    if (!textarea || !previous) return;
+    bodyRedoRef.current.push({
+      value: textarea.value,
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    });
+    lastBodyEditRef.current = null;
+    applyBodySnapshot(previous);
+  }
+
+  function redoBody() {
+    const textarea = textareaRef.current;
+    const next = bodyRedoRef.current.pop();
+    if (!textarea || !next) return;
+    bodyUndoRef.current.push({
+      value: textarea.value,
+      start: textarea.selectionStart,
+      end: textarea.selectionEnd,
+    });
+    lastBodyEditRef.current = null;
+    applyBodySnapshot(next);
+  }
+
+  function handleBodyBeforeInput(event: React.SyntheticEvent<HTMLTextAreaElement>) {
+    const inputType = (event.nativeEvent as InputEvent).inputType;
+    if (inputType === 'historyUndo' || inputType === 'historyRedo') {
+      event.preventDefault();
+      if (inputType === 'historyUndo') undoBody();
+      else redoBody();
+      return;
+    }
+    recordBodyHistory(inputType || 'input');
+    beforeInputRecordedRef.current = true;
+  }
+
+  function handleBodyChange(event: React.ChangeEvent<HTMLTextAreaElement>) {
+    const nextValue = event.currentTarget.value;
+    const inputType = (event.nativeEvent as InputEvent).inputType || 'input';
+    if (!beforeInputRecordedRef.current) {
+      const delta = nextValue.length - draft.body.length;
+      const cursor = event.currentTarget.selectionStart;
+      const start = delta >= 0 ? Math.max(0, cursor - delta) : cursor;
+      const end = delta >= 0 ? start : cursor - delta;
+      recordBodyHistory(inputType, { value: draft.body, start, end });
+    }
+    beforeInputRecordedRef.current = false;
+    updateDraft('body', nextValue);
+  }
 
   useEffect(() => {
     const timer = window.setTimeout(async () => {
@@ -94,6 +183,18 @@ export function ArticleEditor({
       event.preventDefault();
     };
     const saveShortcut = (event: KeyboardEvent) => {
+      const isBodyFocused = document.activeElement === textareaRef.current;
+      if ((event.ctrlKey || event.metaKey) && isBodyFocused && event.key.toLowerCase() === 'z') {
+        event.preventDefault();
+        if (event.shiftKey) redoBody();
+        else undoBody();
+        return;
+      }
+      if (event.ctrlKey && isBodyFocused && event.key.toLowerCase() === 'y') {
+        event.preventDefault();
+        redoBody();
+        return;
+      }
       if ((event.ctrlKey || event.metaKey) && event.key.toLowerCase() === 's') {
         event.preventDefault();
         void save();
@@ -118,6 +219,11 @@ export function ArticleEditor({
       });
       const result = (await response.json()) as ApiPayload;
       if (!response.ok || !result.article) throw new Error(result.error ?? '요청을 처리하지 못했습니다.');
+      if (result.article.draft.body !== draft.body) {
+        bodyUndoRef.current = [];
+        bodyRedoRef.current = [];
+        lastBodyEditRef.current = null;
+      }
       setArticle(result.article);
       setDraft(result.article.draft);
       setPreview(result.article.draft.compiled);
@@ -172,6 +278,7 @@ export function ArticleEditor({
     if (!textarea) return;
     const start = textarea.selectionStart;
     const end = textarea.selectionEnd;
+    recordBodyHistory('format');
     const selected = draft.body.slice(start, end) || placeholder;
     const nextBody = `${draft.body.slice(0, start)}${before}${selected}${after}${draft.body.slice(end)}`;
     updateDraft('body', nextBody);
@@ -279,7 +386,8 @@ export function ArticleEditor({
             ref={textareaRef}
             className="editor-markdown-input"
             value={draft.body}
-            onChange={(event) => updateDraft('body', event.target.value)}
+            onBeforeInput={handleBodyBeforeInput}
+            onChange={handleBodyChange}
             spellCheck={false}
             aria-label="Markdown 본문"
           />
