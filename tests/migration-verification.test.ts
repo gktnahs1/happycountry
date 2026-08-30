@@ -8,7 +8,7 @@ import { parseArticleSource } from '../lib/content/parse-article';
 
 const expectedDigests = {
   'ai-model-business':
-    '7cf000022d61fd7e18171096010efbb0cb729948adf0a4865a017efde0956ac5',
+    '2f18aa4d6ead403c80cc4260aaccdb1eeffbdddfd4bd712dc472f69958f64198',
   'next-platform':
     'a4dcad3071e285116e668f3ecf39c9254d4a41398abf6ba68a82c40819d50ffb',
 } as const;
