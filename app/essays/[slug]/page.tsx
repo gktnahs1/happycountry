@@ -6,7 +6,10 @@ import { ArrowLeft, ArrowRight } from 'lucide-react';
 import { ArticleDocumentRenderer } from '@/components/article/article-document';
 import { ArticleToc } from '@/components/article/article-toc';
 import { ReadingProgress } from '@/components/reading-progress';
-import { articles, getArticle } from '@/lib/content/articles';
+import {
+  getPublishedArticle,
+  getPublishedArticles,
+} from '@/lib/editor/repository';
 
 type EssayPageProps = {
   params: Promise<{ slug: string }>;
@@ -14,15 +17,13 @@ type EssayPageProps = {
 
 const SITE_URL = 'https://happycountry-essays.gktnahs.chatgpt.site';
 
-export function generateStaticParams() {
-  return articles.map((article) => ({ slug: article.slug }));
-}
+export const dynamic = 'force-dynamic';
 
 export async function generateMetadata({
   params,
 }: EssayPageProps): Promise<Metadata> {
   const { slug } = await params;
-  const article = getArticle(slug);
+  const article = await getPublishedArticle(slug);
 
   if (!article) return { title: '글을 찾을 수 없습니다' };
 
@@ -58,7 +59,7 @@ export async function generateMetadata({
 
 export default async function EssayPage({ params }: EssayPageProps) {
   const { slug } = await params;
-  const article = getArticle(slug);
+  const article = await getPublishedArticle(slug);
 
   if (!article) {
     return (
@@ -70,6 +71,7 @@ export default async function EssayPage({ params }: EssayPageProps) {
     );
   }
 
+  const articles = await getPublishedArticles();
   const articleIndex = articles.findIndex((item) => item.slug === article.slug);
   const previous = articleIndex > 0 ? articles[articleIndex - 1] : undefined;
   const next =

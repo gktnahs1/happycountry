@@ -1,8 +1,11 @@
 /* oxlint-disable next/no-html-link-for-pages -- Native navigation avoids the broken vinext client-router interception. */
 /* oxlint-disable next/no-img-element -- Thumbnail images have author-defined dimensions and validated alt text. */
-import { articles } from '@/lib/content/articles';
+import { getPublishedArticles } from '@/lib/editor/repository';
 
-export default function Home() {
+export const dynamic = 'force-dynamic';
+
+export default async function Home() {
+  const articles = await getPublishedArticles();
   return (
     <main className="index-page">
       <header className="site-header">
